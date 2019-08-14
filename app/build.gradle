@@ -1,0 +1,90 @@
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "ybq.android.myapplication"
+        minSdkVersion 23
+        targetSdkVersion 28
+        versionCode 4
+        versionName "4.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+                //兼容cpi架构
+                abiFilters 'armeabi-v7a','x86'
+            }
+        }
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('key/bspatch.jks')
+            storePassword '1234567890'
+            keyAlias 'key0'
+            keyPassword '1234567890'
+        }
+
+        debug {
+            storeFile file('key/bspatch.jks')
+            storePassword "1234567890"
+            keyAlias "key0"
+            keyPassword "1234567890"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            ndk {
+                //选择要添加的对应cpu类型的.so库。
+                abiFilters 'armeabi-v7a','x86'
+            }
+        }
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            ndk {
+                //选择要添加的对应cpu类型的.so库。
+                abiFilters 'armeabi-v7a', 'x86'
+            }
+        }
+    }
+
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "${appName()}" + "_V${versionName}" + ".apk"
+        }
+    }
+
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.10.2"
+        }
+    }
+}
+
+static def appName() {
+    return "bspatch"
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
